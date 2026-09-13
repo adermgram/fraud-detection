@@ -4,3 +4,4 @@ app/fraud_detection.db
 .venv/
 venv/
 .env
+reports/*.pdf

@@ -43,11 +43,16 @@ first run).
 ## Retrain the model
 
 ```
-pip install -r requirements-dev.txt   # adds xgboost, imbalanced-learn, matplotlib
+pip install -r requirements-dev.txt   # adds xgboost, imbalanced-learn, matplotlib, reportlab
 cd src
 python train.py
 python generate_visuals.py
+python generate_report_pdf.py   # writes reports/Fraud_Detection_Project_Report.pdf
 ```
+
+`reports/Fraud_Detection_Project_Report.pdf` is a plain-language write-up of the
+dataset, modeling decisions, feature explanations, and evaluation results —
+meant as a starting point for a full project report.
 
 ## Deploying for free (Render + Supabase)
 

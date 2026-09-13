@@ -4,3 +4,5 @@
 imbalanced-learn==0.14.2
 xgboost==3.4.1
 matplotlib==3.11.1
+reportlab==4.4.9
+Pillow==12.1.0

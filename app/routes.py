@@ -25,8 +25,14 @@ AUTH_METHODS = ["OTP", "3D Secure", "No Authentication", "Biometric", "PIN"]
 CHANNELS = ["Internet Banking", "POS", "Mobile App", "USSD", "ATM"]
 DEVICE_TYPES = ["Android Phone", "Mac", "iPhone", "POS Terminal", "ATM Machine",
                 "Tablet", "Windows PC", "Smart Watch"]
-NIGERIAN_STATES = ["Jigawa", "Kano", "Lagos", "Abuja (FCT)", "Kaduna", "Rivers",
-                    "Oyo", "Borno", "Enugu", "Sokoto"]
+NIGERIAN_STATES = [
+    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
+    "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
+    "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi",
+    "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo",
+    "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
+    "Abuja (FCT)",
+]
 LOCATION_BUCKETS = {
     "same_city": {"label": "Same city", "distance_km": 5, "is_foreign": False},
     "same_state": {"label": "Same state, different city", "distance_km": 60, "is_foreign": False},

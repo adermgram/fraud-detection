@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
@@ -91,9 +92,15 @@ def dashboard():
 @login_required
 def customers():
     if request.method == "POST":
+        account_number = request.form["account_number"].strip()
+        existing = Customer.query.filter_by(account_number=account_number).first()
+        if existing:
+            flash(f"Account number {account_number} is already in use by {existing.full_name}.", "error")
+            return redirect(url_for("main.customers"))
+
         customer = Customer(
             full_name=request.form["full_name"],
-            account_number=request.form["account_number"],
+            account_number=account_number,
             card_type=request.form["card_type"],
             card_age_months=int(request.form["card_age_months"]),
             customer_age=int(request.form["customer_age"]),
@@ -102,7 +109,12 @@ def customers():
             home_state=request.form["home_state"],
         )
         db.session.add(customer)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash(f"Account number {account_number} is already in use.", "error")
+            return redirect(url_for("main.customers"))
         flash(f"Customer {customer.full_name} added.", "success")
         return redirect(url_for("main.new_transaction", customer_id=customer.id))
 

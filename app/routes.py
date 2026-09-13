@@ -38,6 +38,18 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
+def as_aware_utc(dt):
+    """Postgres' plain DateTime column returns naive datetimes on read even
+    though everything this app writes is UTC (see models.py) — SQLite
+    happens not to hit this, which is why it only ever showed up in
+    production. Every value here is already UTC, so just attach the tzinfo
+    back on if it's missing, rather than changing the column type and
+    needing to reset the live database."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -119,7 +131,7 @@ def new_transaction():
             .first()
         )
         if last_txn:
-            hours_since_last_txn = round((now - last_txn.created_at).total_seconds() / 3600, 2)
+            hours_since_last_txn = round((now - as_aware_utc(last_txn.created_at)).total_seconds() / 3600, 2)
         else:
             hours_since_last_txn = 72.0  # no history yet: treat as a normal gap
 

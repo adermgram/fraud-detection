@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}New Transaction{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+    <div>
+        <h3 class="mb-0">New Transaction</h3>
+        <p class="text-muted mb-0" style="font-size:0.9rem;">Fill in the details below to check a transaction for fraud risk.</p>
+    </div>
+
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-magic"></i> Quick-fill a demo scenario
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><h6 class="dropdown-header">Optional — for testing/demo only</h6></li>
+            <li><a class="dropdown-item" href="#" onclick="applyPreset('legit'); return false;">
+                <i class="bi bi-check-circle text-success me-1"></i> Likely legit</a></li>
+            <li><a class="dropdown-item" href="#" onclick="applyPreset('borderline'); return false;">
+                <i class="bi bi-dash-circle text-warning me-1"></i> Borderline</a></li>
+            <li><a class="dropdown-item" href="#" onclick="applyPreset('suspicious'); return false;">
+                <i class="bi bi-exclamation-triangle text-danger me-1"></i> Likely fraud</a></li>
+        </ul>
+    </div>
+</div>
+<p class="text-muted mb-4" style="font-size:0.82rem;">
+    <i class="bi bi-info-circle"></i> Every field below is meant to be entered by hand for a real transaction —
+    the dropdown above is just an optional shortcut to pre-fill sample values for testing.
+</p>
+
+{% if not all_customers %}
+<div class="alert alert-warning d-flex align-items-center gap-2">
+    <i class="bi bi-exclamation-triangle"></i>
+    <div>No customers yet. <a href="{{ url_for('main.customers') }}">Add a customer</a> first.</div>
+</div>
+{% endif %}
+
+<form method="POST" class="card-flat p-3 p-sm-4">
+
+    <div class="section-title"><i class="bi bi-person"></i> Customer & Amount</div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-7">
+            <label class="form-label">Customer Account</label>
+            <select name="customer_id" id="customer_id" class="form-select" required>
+                <option value="">Select customer...</option>
+                {% for c in all_customers %}
+                <option value="{{ c.id }}" {% if c.id == preselected_customer_id %}selected{% endif %}>
+                    {{ c.full_name }} — {{ c.account_number }} ({{ c.home_state }})
+                </option>
+                {% endfor %}
+            </select>
+            <a href="{{ url_for('main.customers') }}" class="form-text"><i class="bi bi-plus-lg"></i> Add a new customer</a>
+        </div>
+        <div class="col-12 col-md-5">
+            <label class="form-label">Amount (₦)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white">₦</span>
+                <input type="number" step="0.01" name="amount_ngn" id="amount_ngn" class="form-control" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title"><i class="bi bi-shop"></i> Merchant & Channel</div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Merchant Category</label>
+            <select name="merchant_category" id="merchant_category" class="form-select">
+                {% for c in merchant_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Channel</label>
+            <select name="channel" id="channel" class="form-select">
+                {% for c in channels %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Device Type</label>
+            <select name="device_type" id="device_type" class="form-select">
+                {% for c in device_types %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Auth Method</label>
+            <select name="auth_method" id="auth_method" class="form-select">
+                {% for c in auth_methods %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Transaction Location</label>
+            <select name="location_bucket" id="location_bucket" class="form-select">
+                {% for key, b in location_buckets.items() %}<option value="{{ key }}">{{ b.label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">CVV Retry Count</label>
+            <input type="number" name="cvv_retry_count" id="cvv_retry_count" class="form-control" value="0" min="0" max="5" required>
+        </div>
+    </div>
+
+    <div class="section-title"><i class="bi bi-flag"></i> Risk Indicators</div>
+    <div class="row g-2 mb-4">
+        {% for field, label, icon in [
+            ('is_new_merchant', 'First time paying this merchant', 'shop-window'),
+            ('used_vpn', 'Used VPN', 'globe2'),
+            ('ip_country_mismatch', 'IP/Country Mismatch', 'geo-alt'),
+            ('billing_shipping_mismatch', 'Billing/Shipping Mismatch', 'house-exclamation'),
+            ('is_ai_generated_scam_attempt', 'Suspected AI-Generated Scam', 'robot'),
+        ] %}
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="form-check ps-0 d-flex align-items-center gap-2 border rounded-3 p-2" style="border-color:#e6e9f0 !important;">
+                <input type="checkbox" class="form-check-input ms-0 mt-0" name="{{ field }}" id="{{ field }}">
+                <label class="form-check-label d-flex align-items-center gap-2" for="{{ field }}" style="font-size:0.87rem;">
+                    <i class="bi bi-{{ icon }} text-muted"></i> {{ label }}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary px-4 py-2">
+        <i class="bi bi-search"></i> Check Transaction
+    </button>
+</form>
+
+<p class="text-muted mt-3" style="font-size: 0.82rem;">
+    <i class="bi bi-cpu"></i> Transaction velocity, merchant risk score, time of day and account details are
+    filled in automatically from the customer's profile and recent activity — that's
+    how a real bank system would do it, rather than asking staff to guess those numbers.
+</p>
+
+<script>
+const presets = {
+    legit: {
+        customer_id: {{ all_customers[0].id if all_customers else 'null' }},
+        amount_ngn: 8500, merchant_category: 'Restaurants/Eateries', channel: 'POS',
+        device_type: 'Android Phone', auth_method: 'PIN', location_bucket: 'same_city',
+        cvv_retry_count: 0, flags: []
+    },
+    borderline: {
+        customer_id: {{ all_customers[1].id if all_customers|length > 1 else (all_customers[0].id if all_customers else 'null') }},
+        amount_ngn: 180000, merchant_category: 'Electronics', channel: 'Internet Banking',
+        device_type: 'Windows PC', auth_method: '3D Secure', location_bucket: 'other_state',
+        cvv_retry_count: 1, flags: ['is_new_merchant']
+    },
+    suspicious: {
+        customer_id: {{ all_customers[2].id if all_customers|length > 2 else (all_customers[0].id if all_customers else 'null') }},
+        amount_ngn: 950000, merchant_category: 'Crypto Exchange', channel: 'Internet Banking',
+        device_type: 'Windows PC', auth_method: 'No Authentication', location_bucket: 'abroad',
+        cvv_retry_count: 3,
+        flags: ['is_new_merchant', 'used_vpn', 'ip_country_mismatch', 'is_ai_generated_scam_attempt']
+    }
+};
+
+function applyPreset(name) {
+    const p = presets[name];
+    for (const [key, value] of Object.entries(p)) {
+        if (key === 'flags') continue;
+        const el = document.getElementById(key);
+        if (el && value !== null) el.value = value;
+    }
+    document.querySelectorAll('.form-check-input').forEach(cb => cb.checked = false);
+    p.flags.forEach(f => {
+        const cb = document.getElementById(f);
+        if (cb) cb.checked = true;
+    });
+}
+</script>
+{% endblock %}

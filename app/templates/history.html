@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h3 class="mb-1">Transaction History</h3>
+<p class="text-muted mb-4" style="font-size:0.9rem;">Every transaction submitted, with its outcome.</p>
+
+<div class="card-flat p-3 p-sm-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Customer</th><th>Amount</th><th>Merchant</th><th>Risk Score</th>
+                    <th>Status</th><th>Decision</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for txn in transactions %}
+                <tr>
+                    <td class="text-muted">#{{ txn.id }}</td>
+                    <td class="fw-medium">{{ txn.customer.full_name }}</td>
+                    <td>₦{{ "{:,.2f}".format(txn.amount_ngn) }}</td>
+                    <td>{{ txn.merchant_category }}</td>
+                    <td>{{ "%.1f"|format(txn.prediction.risk_score * 100) }}%</td>
+                    <td>
+                        {% if txn.prediction.is_flagged %}
+                            <span class="badge badge-flagged"><i class="bi bi-exclamation-triangle-fill me-1"></i>Flagged</span>
+                        {% else %}
+                            <span class="badge badge-clear"><i class="bi bi-check-circle-fill me-1"></i>Clear</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if txn.prediction.decision %}
+                            <span class="badge badge-neutral">{{ txn.prediction.decision.action }}</span>
+                        {% else %}
+                            <span class="text-muted" style="font-size:0.85rem;">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('main.transaction_detail', txn_id=txn.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No transactions yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

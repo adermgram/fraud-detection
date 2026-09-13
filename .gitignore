@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+app/fraud_detection.db
+.venv/
+venv/

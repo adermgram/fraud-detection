@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h3 class="mb-0">Dashboard</h3>
+        <p class="text-muted mb-0" style="font-size:0.9rem;">Overview of transaction risk activity</p>
+    </div>
+    <a href="{{ url_for('main.new_transaction') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> New Transaction
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+        <div class="card-flat stat-card h-100">
+            <div class="stat-icon icon-blue"><i class="bi bi-receipt"></i></div>
+            <div>
+                <div class="stat-value">{{ total }}</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="card-flat stat-card h-100">
+            <div class="stat-icon icon-red"><i class="bi bi-flag"></i></div>
+            <div>
+                <div class="stat-value" style="color:var(--danger);">{{ flagged }}</div>
+                <div class="stat-label">Flagged as Risky</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="card-flat stat-card h-100">
+            <div class="stat-icon icon-amber"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-value" style="color:var(--warning);">{{ pending }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-flat p-3 p-sm-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-list-ul me-1"></i> Recent Transactions</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Customer</th><th>Amount (₦)</th><th>Merchant</th><th>Channel</th>
+                    <th>Risk Score</th><th>Status</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for txn in recent %}
+                <tr>
+                    <td class="text-muted">#{{ txn.id }}</td>
+                    <td class="fw-medium">{{ txn.customer.full_name }}</td>
+                    <td>₦{{ "{:,.2f}".format(txn.amount_ngn) }}</td>
+                    <td>{{ txn.merchant_category }}</td>
+                    <td>{{ txn.channel }}</td>
+                    <td>{{ "%.1f"|format(txn.prediction.risk_score * 100) }}%</td>
+                    <td>
+                        {% if txn.prediction.is_flagged %}
+                            <span class="badge badge-flagged"><i class="bi bi-exclamation-triangle-fill me-1"></i>Flagged</span>
+                        {% else %}
+                            <span class="badge badge-clear"><i class="bi bi-check-circle-fill me-1"></i>Clear</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('main.transaction_detail', txn_id=txn.id) }}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No transactions yet. <a href="{{ url_for('main.new_transaction') }}">Create one</a>.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

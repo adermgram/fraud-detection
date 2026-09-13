@@ -1,0 +1,65 @@
+FRAUD DETECTION MODEL — TRAINING REPORT
+==================================================
+Dataset: credit_card_fraud_2026.csv
+Rows: 20000  Fraud rate: 1.6950%
+Train rows (post-SMOTE): 31458  Test rows: 4000
+
+--- RandomForest ---
+ROC-AUC: 0.7526
+Confusion matrix @0.5: [[3826, 106], [65, 3]]
+              precision    recall  f1-score   support
+
+           0      0.983     0.973     0.978      3932
+           1      0.028     0.044     0.034        68
+
+    accuracy                          0.957      4000
+   macro avg      0.505     0.509     0.506      4000
+weighted avg      0.967     0.957     0.962      4000
+
+
+--- XGBoost ---
+ROC-AUC: 0.6849
+Confusion matrix @0.5: [[3786, 146], [63, 5]]
+              precision    recall  f1-score   support
+
+           0      0.984     0.963     0.973      3932
+           1      0.033     0.074     0.046        68
+
+    accuracy                          0.948      4000
+   macro avg      0.508     0.518     0.509      4000
+weighted avg      0.967     0.948     0.957      4000
+
+
+Selected model: RandomForest (highest ROC-AUC = 0.7526)
+
+Threshold tuning on selected model:
+  F1-optimal   -> {'threshold': 0.24553968253968256, 'precision': 0.041666666666666664, 'recall': 0.29411764705882354, 'f1': 0.072992700729927}
+  Operating    -> {'threshold': 0.09593650793650794, 'precision': 0.03556485355648536, 'recall': 0.75, 'f1': 0.06790945406125166, 'target_recall': 0.75}
+
+Feature importances:
+  merchant_risk_score          0.1376
+  velocity_score               0.1230
+  auth_method                  0.0909
+  channel                      0.0640
+  account_balance_ngn          0.0576
+  time_of_day_hour             0.0482
+  merchant_category            0.0475
+  card_type                    0.0430
+  customer_age                 0.0425
+  distance_from_home_km        0.0424
+  hours_since_last_txn         0.0386
+  device_type                  0.0379
+  amount_ngn                   0.0363
+  amount_log                   0.0361
+  card_age_months              0.0350
+  cvv_retry_count              0.0300
+  day_of_week                  0.0291
+  txn_count_last_24h           0.0214
+  prior_disputes               0.0160
+  is_night                     0.0066
+  is_new_merchant              0.0049
+  ip_country_mismatch          0.0048
+  used_vpn                     0.0031
+  is_foreign_transaction       0.0017
+  billing_shipping_mismatch    0.0014
+  is_ai_generated_scam_attempt 0.0006

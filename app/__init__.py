@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -13,10 +14,25 @@ login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 
 
+def _database_uri() -> str:
+    """Use a hosted Postgres in production (DATABASE_URL env var), local
+    SQLite file otherwise. Free hosts (Render, Railway, etc.) wipe the local
+    filesystem on every restart/redeploy, so SQLite can't be trusted there —
+    a real DATABASE_URL is required once this is deployed."""
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        # Some providers (Render, Heroku-style) hand out "postgres://", but
+        # SQLAlchemy 2.x only accepts the "postgresql://" scheme.
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return url
+    return f"sqlite:///{ROOT / 'app' / 'fraud_detection.db'}"
+
+
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = "dev-secret-change-in-production"
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{ROOT / 'app' / 'fraud_detection.db'}"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
+    app.config["SQLALCHEMY_DATABASE_URI"] = _database_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)

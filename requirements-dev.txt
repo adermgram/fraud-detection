@@ -1,0 +1,6 @@
+# Only needed to retrain the model or regenerate report charts —
+# not required to run the Flask app itself.
+-r requirements.txt
+imbalanced-learn==0.14.2
+xgboost==3.4.1
+matplotlib==3.11.1

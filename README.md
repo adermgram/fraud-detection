@@ -65,10 +65,16 @@ this is deployed, even though SQLite is fine for local development.
 **1. Push to GitHub** (see below), then:
 
 **2. Create a free Postgres database on [Supabase](https://supabase.com)**
-(no credit card required). New project → once it's provisioned, go to
-Project Settings → Database → Connection string ("URI" tab, mode
-**Session**) and copy it (starts with `postgresql://`), filling in the
-database password you set when creating the project.
+(no credit card required). New project → once it's provisioned, click the
+**Connect** button at the top of the project page → under Connection
+string, choose the **Session pooler** option (not "Direct connection") →
+copy the string and replace `[YOUR-PASSWORD]` with the database password
+you set when creating the project.
+
+> Why Session pooler and not Direct connection: Supabase's Direct connection
+> only works over IPv6, and Render (like most free hosts) only supports
+> outbound IPv4 — so Direct connection would fail silently from Render.
+> Session pooler is IPv4-compatible and is what makes this work.
 
 > Free Supabase projects auto-pause after 7 days with no activity. If the
 > app shows a database connection error after a quiet week, open the

@@ -5,3 +5,4 @@ app/fraud_detection.db
 venv/
 .env
 reports/*.pdf
+reports/screenshots/
